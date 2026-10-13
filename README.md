@@ -1,5 +1,11 @@
 # Bulletin public metrics
 
+**TL;DR**
+- **What:** a public Grafana dashboard of liveness, bitswap and HOP metrics from external Bulletin collators.
+- **Operators:** add one `/metrics` route to their existing reverse proxy, allowed only from our IP. No restart, no new port. See [OPERATORS.md](OPERATORS.md).
+- **Us:** run `docker compose up -d` on a server with a public subdomain, then add each operator to `prometheus/targets/operators.yml`.
+- **Status:** tested end to end on a local network (two collators, `stable2609`). Waiting for the server and the DevSecOps domain approval.
+
 A public Grafana dashboard of metrics that Bulletin collator operators share
 voluntarily. Prometheus scrapes each operator's `/metrics` URL through the
 operator's own reverse proxy; Grafana shows the data read-only to anyone.
