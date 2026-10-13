@@ -1,0 +1,40 @@
+# Local Bulletin network for testing the public metrics stack.
+# Two collators stand in for two external operators. Their metrics ports
+# (9615, 9715) listen on localhost only, as on a production collator.
+[settings]
+node_spawn_timeout = 240
+
+[relaychain]
+default_command = "{{POLKADOT_BINARY_PATH}}"
+chain = "westend-local"
+
+[[relaychain.nodes]]
+name = "alice"
+validator = true
+rpc_port = 9942
+
+[[relaychain.nodes]]
+name = "bob"
+validator = true
+rpc_port = 9943
+
+[[parachains]]
+id = 1010
+chain_spec_path = "./bulletin-westend-spec.json"
+cumulus_based = true
+
+[[parachains.collators]]
+name = "operator-a"
+command = "{{POLKADOT_PARACHAIN_BINARY_PATH}}"
+validator = true
+rpc_port = 10000
+prometheus_port = 9615
+args = ["--ipfs-server", "--enable-hop", "--hop-retention-secs 300", "--hop-check-interval 10", "--hop-promotion-buffer-secs 120", "--", "--listen-addr=/ip4/127.0.0.1/tcp/10003/ws", "-:--port"]
+
+[[parachains.collators]]
+name = "operator-b"
+command = "{{POLKADOT_PARACHAIN_BINARY_PATH}}"
+validator = true
+rpc_port = 12346
+prometheus_port = 9715
+args = ["--ipfs-server", "--enable-hop", "--hop-retention-secs 300", "--hop-check-interval 10", "--hop-promotion-buffer-secs 120", "--", "--listen-addr=/ip4/127.0.0.1/tcp/12349/ws", "-:--port"]

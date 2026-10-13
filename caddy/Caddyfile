@@ -1,0 +1,6 @@
+# Public entry point for Grafana. With PUBLIC_DOMAIN set to the approved
+# subdomain, Caddy gets and renews a Let's Encrypt certificate on its own.
+# Locally, PUBLIC_DOMAIN=:80 serves plain HTTP.
+{$PUBLIC_DOMAIN} {
+	reverse_proxy grafana:3000
+}

@@ -1,0 +1,25 @@
+global:
+  scrape_interval: 30s
+  scrape_timeout: 10s
+
+scrape_configs:
+  - job_name: bulletin-collators
+    # One entry per operator in targets/*.yml. Prometheus reloads these files
+    # on change, so adding an operator needs no restart.
+    file_sd_configs:
+      - files: [/etc/prometheus/targets/*.yml]
+    metric_relabel_configs:
+      # The `method` label on substrate_rpc_calls_* contains whatever method
+      # name an RPC client sent, so anyone can fill it with arbitrary strings.
+      # Keep these series only for the four HOP methods; drop the rest.
+      - source_labels: [__name__]
+        regex: substrate_rpc_calls_.*
+        target_label: rpc_filter
+        replacement: drop
+      - source_labels: [method]
+        regex: hop_submit|hop_claim|hop_ack|hop_poolStatus
+        target_label: rpc_filter
+        replacement: ""
+      - source_labels: [rpc_filter]
+        regex: drop
+        action: drop

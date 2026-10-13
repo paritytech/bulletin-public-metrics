@@ -1,0 +1,15 @@
+# Test copy of the Caddy snippet in OPERATORS.md. Values come from the
+# environment: METRICS_UPSTREAM (127.0.0.1:9615 on a real collator) and
+# PARITY_SCRAPER_IP.
+:80 {
+	@parity {
+		path /metrics
+		remote_ip {$PARITY_SCRAPER_IP}
+	}
+	handle @parity {
+		reverse_proxy {$METRICS_UPSTREAM}
+	}
+	handle /metrics {
+		respond 403
+	}
+}

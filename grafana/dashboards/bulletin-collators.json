@@ -1,0 +1,1112 @@
+{
+  "uid": "bulletin-collators",
+  "title": "Bulletin Collators",
+  "description": "Metrics shared voluntarily by Bulletin collator operators.",
+  "tags": [
+    "bulletin"
+  ],
+  "timezone": "utc",
+  "refresh": "30s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "schemaVersion": 39,
+  "editable": false,
+  "graphTooltip": 1,
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "hide": 2,
+        "current": {
+          "text": "Prometheus",
+          "value": "prometheus"
+        }
+      },
+      {
+        "name": "chain",
+        "label": "Chain",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "refresh": 2,
+        "query": {
+          "query": "label_values(substrate_block_height{job=\"bulletin-collators\"}, chain)",
+          "refId": "chain"
+        },
+        "definition": "label_values(substrate_block_height{job=\"bulletin-collators\"}, chain)"
+      },
+      {
+        "name": "operator",
+        "label": "Operator",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "refresh": 2,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "query": {
+          "query": "label_values(up{job=\"bulletin-collators\"}, operator)",
+          "refId": "operator"
+        },
+        "definition": "label_values(up{job=\"bulletin-collators\"}, operator)"
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "Collators",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [],
+      "id": 1
+    },
+    {
+      "type": "stat",
+      "title": "Collators reporting",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 4,
+        "h": 6
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "count(up{job=\"bulletin-collators\", operator=~\"$operator\"} == 1) or vector(0)",
+          "legendFormat": "reporting",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {},
+      "description": "Collators whose metrics endpoint answered the last scrape.",
+      "id": 2
+    },
+    {
+      "type": "state-timeline",
+      "title": "Metrics endpoint reachable",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 1,
+        "w": 10,
+        "h": 6
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "max by (operator) (up{job=\"bulletin-collators\", operator=~\"$operator\"})",
+          "legendFormat": "{{operator}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "down",
+                  "color": "red"
+                },
+                "1": {
+                  "text": "up",
+                  "color": "green"
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {},
+      "description": "1 = the last scrape succeeded. A gap means the operator's endpoint was down or unreachable.",
+      "id": 3
+    },
+    {
+      "type": "table",
+      "title": "Node versions",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 14,
+        "y": 1,
+        "w": 10,
+        "h": 6
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "max by (operator, version) (substrate_build_info{job=\"bulletin-collators\", operator=~\"$operator\"})",
+          "legendFormat": "",
+          "refId": "A",
+          "format": "table",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {},
+      "description": "Node version reported by each collator. Bitswap metrics need polkadot-sdk stable2609 or newer.",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true
+            }
+          }
+        }
+      ],
+      "id": 4
+    },
+    {
+      "type": "row",
+      "title": "Chain liveness",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 5
+    },
+    {
+      "type": "timeseries",
+      "title": "Block production rate (blocks/min)",
+      "description": "Drops to 0 = stall (the BulletinBlockProductionStall alert).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 0.1
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "max by (chain) (rate(substrate_block_height{chain=~\"$chain\", status=\"best\"}[5m])) * 60",
+          "legendFormat": "{{chain}}"
+        }
+      ],
+      "id": 6
+    },
+    {
+      "type": "timeseries",
+      "title": "Finality lag (best - finalized)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "max by (chain) (substrate_block_height{chain=~\"$chain\", status=\"best\"} - ignoring(status) substrate_block_height{chain=~\"$chain\", status=\"finalized\"})",
+          "legendFormat": "{{chain}}"
+        }
+      ],
+      "id": 7
+    },
+    {
+      "type": "timeseries",
+      "title": "Best block height",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "max by (chain) (substrate_block_height{chain=~\"$chain\", status=\"best\"})",
+          "legendFormat": "{{chain}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 8
+    },
+    {
+      "type": "timeseries",
+      "title": "Finalized block height",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "max by (chain) (substrate_block_height{chain=~\"$chain\", status=\"finalized\"})",
+          "legendFormat": "{{chain}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 9
+    },
+    {
+      "type": "timeseries",
+      "title": "Peers",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "max by (chain, operator) (substrate_sub_libp2p_peers_count{chain=~\"$chain\"})",
+          "legendFormat": "{{operator}}"
+        }
+      ],
+      "id": 10
+    },
+    {
+      "type": "row",
+      "title": "Bitswap",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 56
+      },
+      "id": 11
+    },
+    {
+      "type": "timeseries",
+      "title": "Bitswap data served",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 57,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum by (operator) (rate(substrate_sub_libp2p_bitswap_response_bytes_total{chain=~\"$chain\", operator=~\"$operator\"}[5m]))",
+          "legendFormat": "{{operator}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "options": {},
+      "description": "Bytes sent to IPFS clients over bitswap.",
+      "id": 12
+    },
+    {
+      "type": "timeseries",
+      "title": "Bitswap wantlist entries by outcome",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 57,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum by (outcome) (rate(substrate_sub_libp2p_bitswap_entries_total{chain=~\"$chain\", operator=~\"$operator\"}[5m]))",
+          "legendFormat": "{{outcome}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "options": {},
+      "description": "Requested blocks per second, split by outcome (block sent, have, dont_have).",
+      "id": 13
+    },
+    {
+      "type": "timeseries",
+      "title": "Bitswap dont_have ratio",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 65
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum by (chain, operator) (rate(substrate_sub_libp2p_bitswap_entries_total{outcome=\"dont_have\", chain=~\"$chain\"}[5m])) / clamp_min(sum by (chain, operator) (rate(substrate_sub_libp2p_bitswap_entries_total{chain=~\"$chain\"}[5m])), 1e-9)",
+          "legendFormat": "{{operator}}"
+        }
+      ],
+      "id": 14
+    },
+    {
+      "type": "timeseries",
+      "title": "Bitswap inbound request p95 latency",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 65
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le, chain, operator) (rate(substrate_sub_libp2p_bitswap_inbound_request_duration_seconds_bucket{chain=~\"$chain\"}[5m])))",
+          "legendFormat": "{{operator}}"
+        }
+      ],
+      "id": 15
+    },
+    {
+      "type": "row",
+      "title": "Pool",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 73
+      },
+      "id": 16
+    },
+    {
+      "type": "stat",
+      "title": "Pool fill",
+      "description": "Bytes used / --hop-max-pool-size. Submits fail with pool_full at 100%.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 74
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.7
+              },
+              {
+                "color": "red",
+                "value": 0.9
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "max by (operator) (substrate_hop_pool_bytes{chain=~\"$chain\", operator=~\"$operator\"} / substrate_hop_pool_max_bytes{chain=~\"$chain\", operator=~\"$operator\"})",
+          "legendFormat": "{{operator}}"
+        }
+      ],
+      "id": 17
+    },
+    {
+      "type": "timeseries",
+      "title": "Pool bytes",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 6,
+        "y": 74
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "max by (operator) (substrate_hop_pool_bytes{chain=~\"$chain\", operator=~\"$operator\"})",
+          "legendFormat": "{{operator}} used"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "max by (operator) (substrate_hop_pool_max_bytes{chain=~\"$chain\", operator=~\"$operator\"})",
+          "legendFormat": "{{operator}} max"
+        }
+      ],
+      "id": 18
+    },
+    {
+      "type": "timeseries",
+      "title": "Pool entries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 15,
+        "y": 74
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "max by (operator) (substrate_hop_pool_entries{chain=~\"$chain\", operator=~\"$operator\"})",
+          "legendFormat": "{{operator}}"
+        }
+      ],
+      "id": 19
+    },
+    {
+      "type": "timeseries",
+      "title": "Inserted bytes rate",
+      "description": "Accounted size of accepted hop_submit blobs (includes per-recipient overhead).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 82
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum by (operator) (rate(substrate_hop_pool_inserted_bytes_total{chain=~\"$chain\", operator=~\"$operator\"}[5m]))",
+          "legendFormat": "{{operator}}"
+        }
+      ],
+      "id": 20
+    },
+    {
+      "type": "timeseries",
+      "title": "Removals by reason",
+      "description": "acked = normal hand-off. expired_promoted = fell back to on-chain. expired_unpromoted = lost (upper bound). corrupt / startup_dropped = disk problems.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 8,
+        "y": 82
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum by (operator, reason) (increase(substrate_hop_pool_removed_total{chain=~\"$chain\", operator=~\"$operator\"}[$__rate_interval]))",
+          "legendFormat": "{{operator}} {{reason}}"
+        }
+      ],
+      "id": 21
+    },
+    {
+      "type": "stat",
+      "title": "Expired unpromoted (range)",
+      "description": "Entries that expired before any recipient claimed them and were not promoted on-chain. Upper bound on data loss; should stay at 0.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 82
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "decimals": 0
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum(increase(substrate_hop_pool_removed_total{chain=~\"$chain\", operator=~\"$operator\", reason=\"expired_unpromoted\"}[$__range]))"
+        }
+      ],
+      "id": 22
+    },
+    {
+      "type": "row",
+      "title": "HOP promotion",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 90
+      },
+      "id": 23
+    },
+    {
+      "type": "timeseries",
+      "title": "Promotion backlog",
+      "description": "Unpromoted entries inside --hop-promotion-buffer-secs of expiry with attempts left, sampled every maintenance tick. Growing = promotion starved (tx pool, authorization, runtime API).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 91
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "max by (operator) (substrate_hop_promotion_backlog{chain=~\"$chain\", operator=~\"$operator\"})",
+          "legendFormat": "{{operator}}"
+        }
+      ],
+      "id": 24
+    },
+    {
+      "type": "timeseries",
+      "title": "Promotions confirmed",
+      "description": "Entries whose on-chain promotion was observed in a block.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 91
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum by (operator) (increase(substrate_hop_promotions_confirmed_total{chain=~\"$chain\", operator=~\"$operator\"}[$__rate_interval]))",
+          "legendFormat": "{{operator}}"
+        }
+      ],
+      "id": 25
+    },
+    {
+      "type": "timeseries",
+      "title": "Maintenance ticks (15m)",
+      "description": "Liveness of the hop-maintenance task. 0 = stalled (default --hop-check-interval is 300s, so expect ~3).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 91
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum by (operator) (increase(substrate_hop_maintenance_ticks_total{chain=~\"$chain\", operator=~\"$operator\"}[15m]))",
+          "legendFormat": "{{operator}}"
+        }
+      ],
+      "id": 26
+    },
+    {
+      "type": "row",
+      "title": "HOP RPCs",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 99
+      },
+      "id": 27
+    },
+    {
+      "type": "timeseries",
+      "title": "HOP calls by operator/method",
+      "description": "From the RPC server (substrate_rpc_calls_*); hop_poolStatus excluded as probe noise.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 100
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum by (operator, method) (increase(substrate_rpc_calls_started{chain=~\"$chain\", operator=~\"$operator\", method=~\"hop_.*\", method!=\"hop_poolStatus\"}[$__rate_interval]))",
+          "legendFormat": "{{operator}} {{method}}"
+        }
+      ],
+      "id": 28
+    },
+    {
+      "type": "timeseries",
+      "title": "HOP errors by method/reason",
+      "description": "reason = HopError variant. not_found on hop_ack is benign (entry already deleted after the final ack); pool_full, user_quota_exceeded, rate_limited, not_authorized are the ones to watch.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 100
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60
+          },
+          "noValue": "No errors"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum by (operator, method, reason) (increase(substrate_hop_rpc_errors_total{chain=~\"$chain\", operator=~\"$operator\"}[$__rate_interval]))",
+          "legendFormat": "{{operator}} {{method}} {{reason}}"
+        }
+      ],
+      "id": 29
+    },
+    {
+      "type": "timeseries",
+      "title": "HOP error ratio by method",
+      "description": "Errors / calls per method, excluding benign not_found and already_claimed (normal terminal states after a final ack).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 108
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "clamp_max(sum by (operator, method) (rate(substrate_hop_rpc_errors_total{chain=~\"$chain\", operator=~\"$operator\", reason!~\"not_found|already_claimed\"}[5m])) / clamp_min(sum by (operator, method) (rate(substrate_rpc_calls_started{chain=~\"$chain\", operator=~\"$operator\", method=~\"hop_.*\", method!=\"hop_poolStatus\"}[5m])), 1e-9), 1) or vector(0)",
+          "legendFormat": "{{operator}} {{method}}"
+        }
+      ],
+      "id": 30
+    },
+    {
+      "type": "timeseries",
+      "title": "HOP call p95 latency by operator/method",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 108
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "\u00b5s"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le, operator, method) (rate(substrate_rpc_calls_time_bucket{chain=~\"$chain\", operator=~\"$operator\", method=~\"hop_.*\", method!=\"hop_poolStatus\"}[5m])))",
+          "legendFormat": "{{operator}} {{method}}"
+        }
+      ],
+      "id": 31
+    }
+  ]
+}

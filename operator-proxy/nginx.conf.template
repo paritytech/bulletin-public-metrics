@@ -1,0 +1,12 @@
+# Test copy of the nginx snippet in OPERATORS.md. Values come from the
+# environment: METRICS_UPSTREAM (127.0.0.1:9615 on a real collator) and
+# PARITY_SCRAPER_IP.
+server {
+    listen 80;
+
+    location = /metrics {
+        allow ${PARITY_SCRAPER_IP};
+        deny all;
+        proxy_pass http://${METRICS_UPSTREAM}/metrics;
+    }
+}
