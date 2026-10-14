@@ -32,7 +32,8 @@ collator :9615 (localhost) <- proxy <-- Prometheus -> Grafana -> Caddy (TLS) -> 
   `tools/build-dashboard.py` from the internal Paseo dashboard in
   `paritytech/bulletin-grafana-dashboards`.
 - `OPERATORS.md`: instructions for operators.
-- `local/`: a local network with two collators for testing.
+- `local/`: a local network with two collators and their scrape targets for
+  testing.
 
 ### Run on the server
 
@@ -50,8 +51,8 @@ EOF
 docker compose up -d
 ```
 
-Then replace the local entries in `prometheus/targets/operators.yml` with the
-operators' URLs and put the VM's IP into `OPERATORS.md`.
+Before the subdomain exists, set `PUBLIC_DOMAIN=:80` and
+`GRAFANA_ROOT_URL=http://<ip>/` to serve plain HTTP on the IP.
 
 ### Add an operator
 
@@ -74,8 +75,9 @@ Check: Prometheus → Status → Targets shows the operator as `UP`.
 2. Create `.env` with `GRAFANA_ADMIN_PASSWORD=<anything>`. If Docker runs in a
    VM (Lima, Colima), also set `HOST_GATEWAY` to the host's address as seen
    from the VM (Lima: `192.168.5.2`).
-3. `docker compose --profile local up -d`
-4. Open `http://localhost:8080`.
+3. `cp local/targets.yml prometheus/targets/local.yml` (git ignores this copy).
+4. `docker compose --profile local up -d`
+5. Open `http://localhost:8080`.
 
 The dashboard needs traffic to show bitswap and HOP data; the
 `examples/hop_round_trip.js` and `examples/authorize_and_store_papi.js`

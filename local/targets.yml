@@ -1,0 +1,12 @@
+# Test targets: the two operator-proxy-* services from the `local` profile in
+# docker-compose.yml. Copy to prometheus/targets/local.yml to use them.
+- targets: [operator-proxy-nginx:80]
+  labels:
+    operator: operator-a
+    __scheme__: http
+    __metrics_path__: /metrics
+- targets: [operator-proxy-caddy:80]
+  labels:
+    operator: operator-b
+    __scheme__: http
+    __metrics_path__: /metrics

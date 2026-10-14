@@ -1,20 +1,9 @@
 # One block per operator. `operator` is the name shown on the dashboard.
-# Production entries use the operator's domain and https, for example:
+# Example:
 #
 # - targets: [bulletin.example.org]
 #   labels:
 #     operator: example
 #     __scheme__: https
 #     __metrics_path__: /metrics
-
-# Local testing: the two operator-proxy-* services from docker-compose.yml.
-- targets: [operator-proxy-nginx:80]
-  labels:
-    operator: operator-a
-    __scheme__: http
-    __metrics_path__: /metrics
-- targets: [operator-proxy-caddy:80]
-  labels:
-    operator: operator-b
-    __scheme__: http
-    __metrics_path__: /metrics
+[]
