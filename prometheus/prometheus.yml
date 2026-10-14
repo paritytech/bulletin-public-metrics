@@ -9,6 +9,12 @@ scrape_configs:
     file_sd_configs:
       - files: [/etc/prometheus/targets/*.yml]
     metric_relabel_configs:
+      # Store only the metrics that OPERATORS.md lists under "What we collect".
+      # Drop everything else the node exports.
+      - source_labels: [__name__]
+        regex: >-
+          substrate_block_height|substrate_build_info|substrate_sub_libp2p_peers_count|substrate_sub_libp2p_bitswap_.*|substrate_hop_.*|substrate_rpc_calls_.*
+        action: keep
       # The `method` label on substrate_rpc_calls_* contains whatever method
       # name an RPC client sent, so anyone can fill it with arbitrary strings.
       # Keep these series only for the four HOP methods; drop the rest.
