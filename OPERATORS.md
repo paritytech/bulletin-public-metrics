@@ -14,7 +14,7 @@ data.
 ## Steps
 
 1. Add a `/metrics` route to your reverse proxy that forwards to the node's
-   Prometheus port and allows only Parity's scraper IP, `<PARITY_SCRAPER_IP>`.
+   Prometheus port and allows only Parity's scraper IP, `51.159.191.39`.
    Your node keeps running; no restart, no new port, no new certificate.
 2. Reload the proxy.
 3. Send us the URL, e.g. `https://bulletin.example.org/metrics`.
@@ -27,7 +27,7 @@ Add to the `server` block that serves your `wss://` endpoint:
 
 ```nginx
 location = /metrics {
-    allow <PARITY_SCRAPER_IP>;
+    allow 51.159.191.39;
     deny all;
     proxy_pass http://127.0.0.1:9615/metrics;
 }
@@ -43,7 +43,7 @@ handlers:
 ```caddy
 @parity {
 	path /metrics
-	remote_ip <PARITY_SCRAPER_IP>
+	remote_ip 51.159.191.39
 }
 handle @parity {
 	reverse_proxy 127.0.0.1:9615
