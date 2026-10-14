@@ -2,9 +2,9 @@
 
 Requires polkadot-sdk `stable2609` or newer, started with `--enable-hop`.
 
-Add a `/metrics` route to the reverse proxy that serves your `wss://` RPC
-endpoint, reload the proxy, and send us the URL
-(e.g. `https://bulletin.example.org/metrics`). Do not add `--prometheus-external`.
+Add a `/metrics` route to the reverse proxy that serves the `wss://` RPC
+endpoint you reported to us, reload the proxy, and tell us when it is live. We
+scrape `https://<that domain>/metrics`. Do not add `--prometheus-external`.
 
 nginx, in the `server` block:
 
