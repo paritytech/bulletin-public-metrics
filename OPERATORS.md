@@ -1,29 +1,12 @@
-# Share your collator metrics with the public Bulletin dashboard
+# Share your collator metrics
 
-Parity runs a public dashboard of Bulletin collator metrics: liveness, bitswap
-(IPFS) serving and HOP. Sharing is voluntary. The metrics contain no personal
-data.
+Requires polkadot-sdk `stable2609` or newer, started with `--enable-hop`.
 
-## Requirements
+Add a `/metrics` route to the reverse proxy that serves your `wss://` RPC
+endpoint, reload the proxy, and send us the URL
+(e.g. `https://bulletin.example.org/metrics`). Do not add `--prometheus-external`.
 
-- polkadot-sdk `stable2609` or newer. Older releases do not export the
-  bitswap metrics; releases before `stable2606-2` also lack the HOP metrics.
-- `--enable-hop` for the HOP metrics.
-- The reverse proxy you already run for the collator's `wss://` RPC endpoint.
-
-## Steps
-
-1. Add a `/metrics` route to your reverse proxy that forwards to the node's
-   Prometheus port and allows only Parity's scraper IP, `51.159.191.39`.
-   Your node keeps running; no restart, no new port, no new certificate.
-2. Reload the proxy.
-3. Send us the URL, e.g. `https://bulletin.example.org/metrics`.
-
-The node's Prometheus port stays on localhost. Do not add `--prometheus-external`.
-
-### nginx
-
-Add to the `server` block that serves your `wss://` endpoint:
+nginx, in the `server` block:
 
 ```nginx
 location = /metrics {
@@ -33,12 +16,7 @@ location = /metrics {
 }
 ```
 
-Reload: `nginx -t && systemctl reload nginx`.
-
-### Caddy
-
-Add to the site block that serves your `wss://` endpoint, before other
-handlers:
+Caddy, in the site block, before other handlers:
 
 ```caddy
 @parity {
@@ -53,13 +31,6 @@ handle /metrics {
 }
 ```
 
-Reload: `systemctl reload caddy`.
+Check: `curl https://<your-domain>/metrics` from any other machine returns `403`.
 
-## Check
-
-From any other machine, `curl https://bulletin.example.org/metrics` must
-return `403`. We confirm on our side that the scrape works.
-
-## Stop sharing
-
-Remove the route and reload the proxy.
+To stop sharing, remove the route and reload the proxy.
