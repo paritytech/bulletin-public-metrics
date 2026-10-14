@@ -1,14 +1,16 @@
 # Bulletin public metrics
 
-**TL;DR**
+## TL;DR
+
 - **What:** a public Grafana dashboard of liveness, bitswap and HOP metrics from external Bulletin collators.
 - **Operators:** add one `/metrics` route to their existing reverse proxy, allowed only from our IP. No restart, no new port. See [OPERATORS.md](OPERATORS.md).
 - **Us:** run `docker compose up -d` on a server with a public subdomain, then add each operator to `prometheus/targets/operators.yml`.
 - **Status:** tested end to end on a local network (two collators, `stable2609`). Waiting for the server and the DevSecOps domain approval.
 
-A public Grafana dashboard of metrics that Bulletin collator operators share
-voluntarily. Prometheus scrapes each operator's `/metrics` URL through the
-operator's own reverse proxy; Grafana shows the data read-only to anyone.
+## Details
+
+Prometheus scrapes each operator's `/metrics` URL through the operator's own
+reverse proxy. Grafana shows the data read-only to anyone.
 
 ```
 operator host                              this server
@@ -28,7 +30,7 @@ collator :9615 (localhost) <- proxy <-- Prometheus -> Grafana -> Caddy (TLS) -> 
 - `OPERATORS.md`: instructions for operators.
 - `local/`: a local network with two collators for testing.
 
-## Run on the server
+### Run on the server
 
 Requirements: a VM with a static public IP, Docker with the compose plugin,
 DNS for the subdomain pointing to the VM, ports 80 and 443 open.
@@ -47,7 +49,7 @@ docker compose up -d
 Then replace the local entries in `prometheus/targets/operators.yml` with the
 operators' URLs and put the VM's IP into `OPERATORS.md`.
 
-## Add an operator
+### Add an operator
 
 Append to `prometheus/targets/operators.yml`:
 
@@ -61,7 +63,7 @@ Append to `prometheus/targets/operators.yml`:
 
 Check: Prometheus → Status → Targets shows the operator as `UP`.
 
-## Test locally
+### Test locally
 
 1. `local/run-network.sh`: starts a relay chain and two Bulletin collators
    (polkadot-sdk `stable2609`) with metrics on `localhost:9615` and `:9715`.
@@ -75,7 +77,7 @@ The dashboard needs traffic to show bitswap and HOP data; the
 `examples/hop_round_trip.js` and `examples/authorize_and_store_papi.js`
 scripts in `polkadot-bulletin-chain` generate it.
 
-## Rebuild the dashboard
+### Rebuild the dashboard
 
 ```sh
 tools/build-dashboard.py <path>/bulletin-paseo-dashboard.json > grafana/dashboards/bulletin-collators.json
