@@ -9,6 +9,8 @@
 
 ## Details
 
+### How it works
+
 Prometheus scrapes each operator's `/metrics` URL through the operator's own
 reverse proxy. Grafana shows the data read-only to anyone.
 
@@ -17,6 +19,8 @@ operator host                              this server
 collator :9615 (localhost) <- proxy <-- Prometheus -> Grafana -> Caddy (TLS) -> public
                          (allows only this server's IP)
 ```
+
+### Files
 
 - `docker-compose.yml`: Prometheus, Grafana, Caddy. The `local` profile adds
   two stand-in operator proxies (nginx and Caddy) for testing.
