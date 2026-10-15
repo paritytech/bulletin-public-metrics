@@ -1,6 +1,7 @@
 # Local Bulletin network for testing the public metrics stack.
-# Two collators stand in for two external operators. Their metrics ports
-# (9615, 9715) listen on localhost only, as on a production collator.
+# Two collators stand in for two external operators, with metrics on ports
+# 9615 and 9715. zombienet adds --prometheus-external, so these ports listen
+# on all interfaces; a production collator keeps them on localhost.
 [settings]
 node_spawn_timeout = 240
 
