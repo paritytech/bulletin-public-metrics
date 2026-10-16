@@ -4,7 +4,7 @@ Parity runs a public, read-only dashboard of Bulletin collator metrics: https://
 
 ## Why
 
-Parity runs no Bulletin collators on Polkadot, and HOP and bitswap work per collator: each collator holds its own HOP pool and serves its own data over bitswap. The chain itself does not show how well the network stores and serves data, so today we have no view of it. Your metrics give us that view, so we can find bottlenecks and improve Bulletin for the apps built on the Product platform.
+Bulletin stores and serves the data of the apps built on the Polkadot Product platform. Each collator holds its own HOP pool and serves its own data over bitswap, so collator metrics show how well the network serves these apps: where uploads queue up, where reads fail or slow down. We use them to tune Bulletin and the Product platform, and the dashboard shows the data each collator serves.
 
 ## What we need from you
 
