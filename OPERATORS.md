@@ -4,9 +4,7 @@ Parity runs a public, read-only dashboard of Bulletin collator metrics: https://
 
 ## Why
 
-- One public view of liveness, bitswap serving and HOP across all Bulletin collators. Users and the ecosystem can see who serves the data.
-- We spot problems on your node early, such as stalled HOP promotion, bitswap errors or an unreachable endpoint, and can reach out before users notice.
-- Planned: alerts on these metrics, sent to you as notifications (e.g. email or an Element message; channel to be decided), so you don't have to build them yourself. We will announce how to subscribe when it is ready.
+Parity runs no Bulletin collators on Polkadot, and HOP and bitswap work per collator: each collator holds its own HOP pool and serves its own data over bitswap. The chain itself does not show how well the network stores and serves data, so today we have no view of it. Your metrics give us that view, so we can find bottlenecks and improve Bulletin for the apps built on the Product platform.
 
 ## What we need from you
 
