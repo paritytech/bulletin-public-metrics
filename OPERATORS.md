@@ -2,6 +2,12 @@
 
 Parity runs a public, read-only dashboard of Bulletin collator metrics: https://bulletin-metrics.security.parity.io. Sharing is voluntary. The metrics contain no personal data.
 
+## Why
+
+- One public view of liveness, bitswap serving and HOP across all Bulletin collators. Users and the ecosystem can see who serves the data.
+- We spot problems on your node early, such as stalled HOP promotion, bitswap errors or an unreachable endpoint, and can reach out before users notice.
+- Next step: alerts on these metrics that you can subscribe to, so you don't have to build them yourself.
+
 ## What we need from you
 
 1. Run polkadot-sdk `stable2609` or newer with `--enable-hop`.
