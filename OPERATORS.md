@@ -13,8 +13,6 @@ The idea: your proxy forwards `GET /metrics` to the node's Prometheus port on lo
 
 If you set `--prometheus-port`, use that port instead of `9615` below.
 
-**Behind Cloudflare or another CDN or load balancer:** your proxy sees the CDN's IP, not ours, so the allowlist blocks us too. Either serve `/metrics` on a hostname that bypasses the CDN (for Cloudflare, a DNS-only record), or make the proxy use the client IP that the CDN forwards (nginx `real_ip_header CF-Connecting-IP` with `set_real_ip_from` for the CDN's ranges; Caddy `trusted_proxies` with the `client_ip` matcher).
-
 ### nginx
 
 In the `server` block that serves your `wss://` endpoint:
@@ -47,6 +45,10 @@ handle /metrics {
 ```
 
 Reload: `systemctl reload caddy`
+
+### Behind Cloudflare or another CDN or load balancer
+
+Your proxy sees the CDN's IP, not ours, so the allowlist blocks us too. Either serve `/metrics` on a hostname that bypasses the CDN (for Cloudflare, a DNS-only record), or make the proxy use the client IP that the CDN forwards (nginx `real_ip_header CF-Connecting-IP` with `set_real_ip_from` for the CDN's ranges; Caddy `trusted_proxies` with the `client_ip` matcher).
 
 ### Check
 
