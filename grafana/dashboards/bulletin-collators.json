@@ -39,7 +39,11 @@
           "query": "label_values(substrate_block_height{job=\"bulletin-collators\"}, chain)",
           "refId": "chain"
         },
-        "definition": "label_values(substrate_block_height{job=\"bulletin-collators\"}, chain)"
+        "definition": "label_values(substrate_block_height{job=\"bulletin-collators\"}, chain)",
+        "current": {
+          "text": "bulletin-polkadot",
+          "value": "bulletin-polkadot"
+        }
       },
       {
         "name": "operator",
